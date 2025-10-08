@@ -101,6 +101,8 @@ public class ParticipationIntegrationTest {
                 .department(Department.COMPUTER_SCI)
                 .build();
 
+        redisEventService.initializeTickets(savedTestEvent.getId(), savedTestEvent.getStock().getStock());
+
         given(userClientService.fetchUser()).willReturn(testUser);
     }
 
