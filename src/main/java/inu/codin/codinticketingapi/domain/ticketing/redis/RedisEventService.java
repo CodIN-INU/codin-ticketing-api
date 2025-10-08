@@ -50,7 +50,7 @@ public class RedisEventService {
         String key = generateKey(eventId);
         ZSetOperations.TypedTuple<String> ticketNumber = eventRedisTemplate.opsForZSet().popMin(key);
 
-        if (ticketNumber == null || ticketNumber.getValue() == null) {
+        if (ticketNumber == null || ticketNumber.getValue() == null || ticketNumber.getValue().equals("-1")) {
 
             throw new TicketingException(TicketingErrorCode.SOLD_OUT);
         }
