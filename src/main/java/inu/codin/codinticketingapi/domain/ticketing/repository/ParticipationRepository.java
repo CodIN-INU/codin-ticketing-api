@@ -69,7 +69,7 @@ public interface ParticipationRepository extends JpaRepository<Participation, Lo
     Page<Participation> findAllByEvent_Id(@Param("eventId") Long eventId, Pageable pageable);
 
     @EntityGraph(attributePaths = {"event"})
-    List<Participation> findAllByEvent_Id(Long eventId);
+    List<Participation> findAllByEvent_IdAndStatus(Long eventId, ParticipationStatus status);
 
     @Query("""
                 SELECT p.signatureImgUrl
