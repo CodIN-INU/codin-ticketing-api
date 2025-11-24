@@ -49,23 +49,23 @@ public class EventCreateRequest {
     @NotNull(message = "티켓팅 이벤트 시작 시간은 필수입니다")
     @Future(message = "티켓팅 이벤트 시작 시간은 현재 시간보다 나중이어야 합니다")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
-    @Schema(description = "티켓팅 이벤트 시작 시간", example = "2025-07-25T10:00:00")
+    @Schema(description = "티켓팅 이벤트 시작 시간", example = "2025-12-25T10:00:00")
     private LocalDateTime eventTime;
 
     @NotNull(message = "티켓팅 이벤트 종료 시간은 필수입니다")
     @Future(message = "티켓팅 이벤트 종료 시간은 현재 시간보다 나중이어야 합니다")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
-    @Schema(description = "티켓팅 이벤트 종료 시간", example = "2025-07-25T12:00:00")
+    @Schema(description = "티켓팅 이벤트 종료 시간", example = "2025-12-25T12:00:00")
     private LocalDateTime eventEndTime;
 
     @NotNull(message = "티켓팅 상품 수령 시작 시간은 필수입니다")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
-    @Schema(description = "티켓팅 상품 수령 시작 시간", example = "2025-07-02T16:00")
+    @Schema(description = "티켓팅 상품 수령 시작 시간", example = "2025-12-25T16:00:00")
     private LocalDateTime eventReceivedStartTime;
 
     @NotNull(message = "티켓팅 상품 수령 종료 시간은 필수입니다")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
-    @Schema(description = "티켓팅 상품 수령 종료 시간", example = "2025-07-02T16:00")
+    @Schema(description = "티켓팅 상품 수령 종료 시간", example = "2025-12-25T17:00:00")
     private LocalDateTime eventReceivedEndTime;
 
     @Pattern(regexp = "\\d{2,3}-\\d{3,4}-\\d{4}", message = "올바른 전화번호 형식이 아닙니다")
