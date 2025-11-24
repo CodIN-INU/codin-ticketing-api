@@ -153,6 +153,11 @@ public class EventAdminService {
 
     @Transactional
     public boolean changeReceiveStatus(Long eventId, String userId, MultipartFile image) {
+        // 권한 검증
+        Event event = findEventById(eventId);
+        String currentUserId = findAdminUser();
+        validationEvent(event, currentUserId);
+
         Participation findParticipation = getParticipationByEventIdAndUserId(eventId, userId);
         String imageURL = imageService.handleImageUpload(image);
 
@@ -171,6 +176,11 @@ public class EventAdminService {
 
     @Transactional
     public void cancelTicket(Long eventId, String userId) {
+        // 권한 검증
+        Event event = findEventById(eventId);
+        String currentUserId = findAdminUser();
+        validationEvent(event, currentUserId);
+
         ticketingService.cancelParticipation(eventId, userId);
     }
 
