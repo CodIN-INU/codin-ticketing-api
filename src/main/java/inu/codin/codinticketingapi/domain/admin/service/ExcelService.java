@@ -5,6 +5,7 @@ import inu.codin.codinticketingapi.domain.admin.entity.Event;
 import inu.codin.codinticketingapi.domain.admin.exception.ExcelErrorCode;
 import inu.codin.codinticketingapi.domain.admin.exception.ExcelException;
 import inu.codin.codinticketingapi.domain.ticketing.entity.Participation;
+import inu.codin.codinticketingapi.domain.ticketing.entity.ParticipationStatus;
 import inu.codin.codinticketingapi.domain.ticketing.exception.TicketingErrorCode;
 import inu.codin.codinticketingapi.domain.ticketing.exception.TicketingException;
 import inu.codin.codinticketingapi.domain.ticketing.repository.EventRepository;
@@ -97,9 +98,9 @@ public class ExcelService {
         }
     }
 
+    // 완료된 참여자 목록 조회
     private List<Participation> getParticipation(Long eventId) {
-
-        return participationRepository.findAllByEvent_Id(eventId);
+        return participationRepository.findAllByEvent_IdAndStatus(eventId, ParticipationStatus.COMPLETED);
     }
 
     private void populateDataRows(Sheet sheet, List<Participation> participationList) {
