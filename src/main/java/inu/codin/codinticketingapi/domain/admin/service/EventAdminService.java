@@ -237,7 +237,7 @@ public class EventAdminService {
             throw new TicketingException(TicketingErrorCode.UNAUTHORIZED_EVENT_UPDATE);
         }
 
-        if (event.getEventTime().isBefore(LocalDateTime.now())) {
+        if (!event.getEventStatus().equals(EventStatus.ENDED) && event.getEventTime().isBefore(LocalDateTime.now())) {
             throw new TicketingException(TicketingErrorCode.EVENT_ALREADY_STARTED);
         }
     }
