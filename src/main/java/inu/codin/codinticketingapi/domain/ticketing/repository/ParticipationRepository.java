@@ -67,6 +67,9 @@ public interface ParticipationRepository extends JpaRepository<Participation, Lo
     @EntityGraph(attributePaths = {"event"})
     List<Participation> findAllByEvent_Id(Long eventId);
 
+    @EntityGraph(attributePaths = {"event"})
+    List<Participation> findAllByEvent_IdAndStatus(Long eventId, ParticipationStatus status);
+
     @Query("""
                 SELECT p.signatureImgUrl
                 FROM Participation p
