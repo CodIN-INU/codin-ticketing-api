@@ -3,6 +3,7 @@ package inu.codin.codinticketingapi.domain.ticketing.dto.response;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import inu.codin.codinticketingapi.domain.admin.entity.Event;
 import inu.codin.codinticketingapi.domain.admin.entity.EventStatus;
+import inu.codin.codinticketingapi.domain.ticketing.entity.Campus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -21,6 +22,8 @@ public class EventPageDetailResponse {
     @Schema(description = "티켓팅 이벤트 ID", example = "111111")
     @NotNull
     private Long eventId;
+    @Schema(description = "이벤트가 진행되는 캠퍼스", example = "송도 캠퍼스")
+    private Campus campus;
     @Schema(description = "이벤트 제목", example = "컴퓨터 공학부 중간고사 간식나눔")
     @NotBlank
     private String eventTitle;
@@ -47,6 +50,7 @@ public class EventPageDetailResponse {
     public static EventPageDetailResponse of(Event event) {
         return EventPageDetailResponse.builder()
                 .eventId(event.getId())
+                .campus(event.getCampus())
                 .eventTitle(event.getTitle())
                 .eventImageUrl(event.getEventImageUrl())
                 .eventTime(event.getEventTime())
@@ -61,6 +65,7 @@ public class EventPageDetailResponse {
     public static EventPageDetailResponse of(Event event, int waitQuantity) {
         return EventPageDetailResponse.builder()
                 .eventId(event.getId())
+                .campus(event.getCampus())
                 .eventTitle(event.getTitle())
                 .eventImageUrl(event.getEventImageUrl())
                 .eventTime(event.getEventTime())

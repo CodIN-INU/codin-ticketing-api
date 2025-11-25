@@ -3,6 +3,7 @@ package inu.codin.codinticketingapi.domain.ticketing.dto.response;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import inu.codin.codinticketingapi.domain.admin.entity.Event;
 import inu.codin.codinticketingapi.domain.admin.entity.EventStatus;
+import inu.codin.codinticketingapi.domain.ticketing.entity.Campus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,6 +18,8 @@ import java.time.LocalDateTime;
 public class EventDetailResponse {
     @Schema(description = "티켓팅 이벤트 ID", example = "111111")
     private Long eventId;
+    @Schema(description = "이벤트가 진행되는 캠퍼스", example = "송도 캠퍼스")
+    private Campus campus;
     @Schema(description = "이벤트 이미지 Url")
     private String eventImageUrls;
     @Schema(description = "이벤트 제목", example = "중간고사 간식나눔")
@@ -52,6 +55,7 @@ public class EventDetailResponse {
     public static EventDetailResponse of(Event event,  boolean isExistParticipationData, boolean isUserParticipatedInEvent) {
         return EventDetailResponse.builder()
                 .eventId(event.getId())
+                .campus(event.getCampus())
                 .eventTime(event.getEventTime())
                 .eventEndTime(event.getEventEndTime())
                 .eventImageUrls(event.getEventImageUrl())
