@@ -39,10 +39,10 @@ public class EventResponse {
     @Schema(description = "이벤트 상태", example = "UPCOMING")
     private EventStatus status;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy.MM.dd (E) HH:mm", timezone = "Asia/Seoul")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy.MM.dd (E) HH:mm", locale = "ko", timezone = "Asia/Seoul")
     @Schema(description = "이벤트 티켓팅 시작 시간", example = "2025.07.02 (수) 16:00")
     private LocalDateTime eventTime;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy.MM.dd (E) HH:mm", timezone = "Asia/Seoul")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy.MM.dd (E) HH:mm", locale = "ko", timezone = "Asia/Seoul")
     @Schema(description = "이벤트 티켓팅 종료 시간", example = "2025.07.02 (수) 16:00")
     private LocalDateTime eventEndTime;
 
