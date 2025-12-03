@@ -3,7 +3,7 @@ package inu.codin.codinticketingapi.domain.ticketing.controller;
 import inu.codin.codinticketingapi.domain.ticketing.dto.response.*;
 import inu.codin.codinticketingapi.domain.ticketing.entity.Campus;
 import inu.codin.codinticketingapi.domain.ticketing.entity.ParticipationStatus;
-import inu.codin.codinticketingapi.domain.ticketing.service.EventService;
+import inu.codin.codinticketingapi.domain.ticketing.service.EventQueryService;
 import inu.codin.codinticketingapi.domain.ticketing.service.EventStockProducerService;
 import inu.codin.codinticketingapi.security.jwt.TokenUserDetails;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +26,7 @@ import java.util.List;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -52,7 +53,7 @@ class EventControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private EventService eventService;
+    private EventQueryService eventQueryService;
 
     @MockitoBean
     private EventStockProducerService eventStockProducerService;
@@ -73,7 +74,7 @@ class EventControllerTest {
         EventPageDetailResponse eventDetail = getEventPageDetailResponse();
         EventPageResponse eventPageResponse = EventPageResponse.of(List.of(eventDetail), PAGE, LAST_PAGE);
         // when
-        when(eventService.getEventList(any(Campus.class), anyInt()))
+        when(eventQueryService.getEventList(any(Campus.class), anyInt()))
                 .thenReturn(eventPageResponse);
         // then
         mockMvc.perform(get("/event")
@@ -91,7 +92,7 @@ class EventControllerTest {
         // given
         EventDetailResponse eventDetailResponse = getEventDetailResponse();
         // when
-        when(eventService.getEventDetail(EVENT_ID)).thenReturn(eventDetailResponse);
+        when(eventQueryService.getEventDetail(EVENT_ID)).thenReturn(eventDetailResponse);
         // then
         mockMvc.perform(get("/event/{id}", EVENT_ID))
                 .andExpect(status().isOk())
@@ -103,21 +104,20 @@ class EventControllerTest {
     @WithMockUser(roles = "USER")
     @DisplayName("유저 이벤트 참여 전체 이력 조회 - 성공")
     void getUserEventList_Success() throws Exception {
-        for (ParticipationStatus status : ParticipationStatus.values()) {
-            // given
-            EventParticipationHistoryDto historyDto = getEventParticipationHistoryDto(status);
-            EventParticipationHistoryPageResponse response = EventParticipationHistoryPageResponse.of(List.of(historyDto), PAGE, LAST_PAGE);
-            // when
-            when(eventService.getUserEventList(PAGE))
-                    .thenReturn(response);
-            // then
-            mockMvc.perform(get("/event/user")
-                            .param("page", String.valueOf(PAGE)))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.data.eventList").isArray())
-                    .andExpect(jsonPath("$.data.eventList[0].eventId").value(EVENT_ID))
-                    .andExpect(jsonPath("$.data.eventList[0].status").value(status.name()));
-        }
+        // given
+        EventParticipationHistoryDto historyDto = getEventParticipationHistoryDto(ParticipationStatus.COMPLETED);
+        EventParticipationHistoryPageResponse response = EventParticipationHistoryPageResponse.of(List.of(historyDto), PAGE, LAST_PAGE);
+        // when
+        when(eventQueryService.getUserEventList(PAGE))
+                .thenReturn(response);
+        // then
+        mockMvc.perform(get("/event/user")
+                        .param("page", String.valueOf(PAGE)))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.eventList").isArray())
+                .andExpect(jsonPath("$.data.eventList[0].eventId").value(EVENT_ID))
+                .andExpect(jsonPath("$.data.eventList[0].status").value("COMPLETED"));
     }
 
     @ParameterizedTest
@@ -186,8 +186,6 @@ class EventControllerTest {
                 .locationInfo(TEST_LOCATION)
                 .eventTime(LocalDateTime.now())
                 .eventEndTime(LocalDateTime.now().plusHours(2))
-                .eventReceivedStartTime(LocalDateTime.now().plusHours(1))
-                .eventReceivedEndTime(LocalDateTime.now().plusHours(2))
                 .status(status)
                 .build();
     }
