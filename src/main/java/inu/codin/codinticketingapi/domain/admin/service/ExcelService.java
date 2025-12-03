@@ -61,7 +61,7 @@ public class ExcelService {
 
         createHeaderRow(sheet);
 
-        List<Participation> participationList = getParticipation(event.getId());
+        List<Participation> participationList = getCompletedParticipation(event.getId());
         populateDataRows(sheet, participationList);
 
         autoSizeAllColumns(sheet);
@@ -99,7 +99,7 @@ public class ExcelService {
     }
 
     // 완료된 참여자 목록 조회
-    private List<Participation> getParticipation(Long eventId) {
+    private List<Participation> getCompletedParticipation(Long eventId) {
         return participationRepository.findAllByEvent_IdAndStatus(eventId, ParticipationStatus.COMPLETED);
     }
 
