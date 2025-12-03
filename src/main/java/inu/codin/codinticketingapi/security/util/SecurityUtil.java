@@ -3,7 +3,6 @@ package inu.codin.codinticketingapi.security.util;
 import inu.codin.codinticketingapi.security.exception.SecurityErrorCode;
 import inu.codin.codinticketingapi.security.exception.SecurityException;
 import inu.codin.codinticketingapi.security.jwt.TokenUserDetails;
-import io.jsonwebtoken.JwtException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -90,7 +89,9 @@ public class SecurityUtil {
     public static boolean hasRole(String role) {
         try {
             String currentRole = getCurrentUserRole();
-            return role.equals(currentRole);
+            String withPrefix = role.startsWith("ROLE_") ? role : "ROLE_" + role;
+
+            return role.equals(currentRole) || withPrefix.equals(currentRole);
         } catch (SecurityException e) {
             return false;
         }
