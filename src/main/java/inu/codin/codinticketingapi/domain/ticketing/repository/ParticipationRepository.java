@@ -26,8 +26,6 @@ public interface ParticipationRepository extends JpaRepository<Participation, Lo
                 e.locationInfo,
                 e.eventTime,
                 e.eventEndTime,
-                e.eventReceivedStartTime,
-                e.eventReceivedEndTime,
                 p.status
             )
             FROM Participation p
@@ -46,8 +44,6 @@ public interface ParticipationRepository extends JpaRepository<Participation, Lo
                 e.locationInfo,
                 e.eventTime,
                 e.eventEndTime,
-                e.eventReceivedStartTime,
-                e.eventReceivedEndTime,
                 p.status
             )
             FROM Participation p
@@ -67,6 +63,9 @@ public interface ParticipationRepository extends JpaRepository<Participation, Lo
 
     @Query("SELECT p FROM Participation p WHERE p.event.id = :eventId AND p.status <> 'CANCELED'")
     Page<Participation> findAllByEvent_Id(@Param("eventId") Long eventId, Pageable pageable);
+
+    @EntityGraph(attributePaths = {"event"})
+    List<Participation> findAllByEvent_IdAndStatus(Long eventId, ParticipationStatus status);
 
     @EntityGraph(attributePaths = {"event"})
     List<Participation> findAllByEvent_IdAndStatus(Long eventId, ParticipationStatus status);
