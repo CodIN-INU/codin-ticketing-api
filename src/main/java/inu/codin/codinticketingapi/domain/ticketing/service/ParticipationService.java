@@ -53,7 +53,6 @@ public class ParticipationService {
 
         // 이벤트 상태 검증
         if (findEvent.getEventStatus() != EventStatus.ACTIVE) {
-
             throw new TicketingException(TicketingErrorCode.EVENT_NOT_ACTIVE);
         }
 

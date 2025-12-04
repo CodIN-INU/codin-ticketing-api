@@ -3,13 +3,14 @@ package inu.codin.codinticketingapi.domain.ticketing.service;
 import inu.codin.codinticketingapi.domain.admin.entity.Event;
 import inu.codin.codinticketingapi.domain.admin.entity.EventStatus;
 import inu.codin.codinticketingapi.domain.image.service.ImageService;
-import inu.codin.codinticketingapi.domain.ticketing.dto.event.ParticipationStatusChangedEvent;
 import inu.codin.codinticketingapi.domain.ticketing.entity.Campus;
 import inu.codin.codinticketingapi.domain.ticketing.entity.Participation;
 import inu.codin.codinticketingapi.domain.ticketing.entity.ParticipationStatus;
 import inu.codin.codinticketingapi.domain.ticketing.entity.Stock;
 import inu.codin.codinticketingapi.domain.ticketing.exception.TicketingErrorCode;
 import inu.codin.codinticketingapi.domain.ticketing.exception.TicketingException;
+import inu.codin.codinticketingapi.domain.ticketing.redis.RedisEventService;
+import inu.codin.codinticketingapi.domain.ticketing.redis.RedisParticipationService;
 import inu.codin.codinticketingapi.domain.ticketing.repository.EventRepository;
 import inu.codin.codinticketingapi.domain.ticketing.repository.ParticipationRepository;
 import inu.codin.codinticketingapi.domain.ticketing.repository.StockRepository;
@@ -52,6 +53,10 @@ class TicketingServiceTest {
     private ImageService imageService;
     @Mock
     private ApplicationEventPublisher eventPublisher;
+    @Mock
+    private RedisEventService redisEventService;
+    @Mock
+    private RedisParticipationService redisParticipationService;
 
     @Mock
     private MultipartFile signatureImage;
@@ -74,63 +79,34 @@ class TicketingServiceTest {
     private static final int CURRENT_STOCK_50 = 50;
     private static final int ZERO_STOCK = 0;
 
-// 현재 동작하지 않는 테스트라 비활성화
-
-//    @Test
-//    @DisplayName("재고 감소 - 정상")
-//    void decrement_성공() {
-//        // given
-//        Event mockEvent = createMockEvent(TEST_EVENT_ID, TEST_EVENT_TITLE, EventStatus.ACTIVE);
-//        Stock mockStock = Stock.builder()
-//                .event(mockEvent)
-//                .initialStock(INITIAL_STOCK)
-//                .build();
-//        mockStock.updateStock(CURRENT_STOCK_50);
-//
-//        given(stockRepository.findByEvent_Id(TEST_EVENT_ID)).willReturn(Optional.of(mockStock));
-//
-//        // when
-//        Stock result = ticketingService.decrement(TEST_EVENT_ID);
-//
-//        // then
-//        assertThat(result).isNotNull();
-//        assertThat(result.getRemainingStock()).isEqualTo(CURRENT_STOCK_50 - 1);
-//        verify(stockRepository).findByEvent_Id(TEST_EVENT_ID);
-//    }
-
     @Test
     @DisplayName("재고 감소 - 재고 없음")
     void decrement_재고없음() {
         // given
-        given(stockRepository.findByEvent_Id(NON_EXISTENT_EVENT_ID)).willReturn(Optional.empty());
+        doThrow(new TicketingException(TicketingErrorCode.STOCK_NOT_FOUND))
+                .when(stockRepository).decrementStockByEventId(NON_EXISTENT_EVENT_ID);
 
         // when & then
         assertThatThrownBy(() -> ticketingService.decrement(NON_EXISTENT_EVENT_ID))
                 .isInstanceOf(TicketingException.class)
                 .hasFieldOrPropertyWithValue("errorCode", TicketingErrorCode.STOCK_NOT_FOUND);
 
-        verify(stockRepository).findByEvent_Id(NON_EXISTENT_EVENT_ID);
+        verify(stockRepository).decrementStockByEventId(NON_EXISTENT_EVENT_ID);
     }
 
     @Test
     @DisplayName("재고 감소 - 품절")
     void decrement_품절() {
         // given
-        Event mockEvent = createMockEvent(TEST_EVENT_ID, TEST_EVENT_TITLE, EventStatus.ACTIVE);
-        Stock mockStock = Stock.builder()
-                .event(mockEvent)
-                .initialStock(INITIAL_STOCK)
-                .build();
-        mockStock.updateStock(ZERO_STOCK);
-
-        given(stockRepository.findByEvent_Id(TEST_EVENT_ID)).willReturn(Optional.of(mockStock));
+        doThrow(new TicketingException(TicketingErrorCode.SOLD_OUT))
+                .when(stockRepository).decrementStockByEventId(TEST_EVENT_ID);
 
         // when & then
         assertThatThrownBy(() -> ticketingService.decrement(TEST_EVENT_ID))
                 .isInstanceOf(TicketingException.class)
                 .hasFieldOrPropertyWithValue("errorCode", TicketingErrorCode.SOLD_OUT);
 
-        verify(stockRepository).findByEvent_Id(TEST_EVENT_ID);
+        verify(stockRepository).decrementStockByEventId(TEST_EVENT_ID);
     }
 
     @Test
@@ -277,6 +253,12 @@ class TicketingServiceTest {
         Event mockEvent = createMockEvent(TEST_EVENT_ID, TEST_EVENT_TITLE, EventStatus.ACTIVE);
 
         Participation mockParticipation = createMockParticipation(mockEvent, userInfo, ParticipationStatus.WAITING);
+        Long participationId = 123L;
+        int ticketNumber = 5;
+
+        given(mockParticipation.getId()).willReturn(participationId);
+        given(mockParticipation.getTicketNumber()).willReturn(ticketNumber);
+
         Stock mockStock = createMockStock(mockEvent, 10);
 
         given(userClientService.fetchUser()).willReturn(userInfo);
@@ -292,10 +274,10 @@ class TicketingServiceTest {
         verify(eventRepository).findById(TEST_EVENT_ID);
         verify(participationRepository).findByEventAndUserId(mockEvent, TEST_USER_ID);
         verify(stockRepository).findByEvent(mockEvent);
-        verify(mockParticipation).changeStatusCanceled();
         verify(mockStock).increase();
-
-        verify(eventPublisher).publishEvent(any(ParticipationStatusChangedEvent.class));
+        verify(redisEventService).returnTicket(TEST_EVENT_ID, ticketNumber);
+        verify(participationRepository).deleteById(participationId);
+        verify(redisParticipationService).evictParticipation(TEST_USER_ID, TEST_EVENT_ID);
     }
 
     @Test

@@ -40,9 +40,10 @@ public class StockCheckJob implements Job {
 
             lastStockMap.compute(eventId, (id, prev) -> {
                 // 최초 등록 시에는 prev == null
-                if (prev == null) {
-                    return current;
-                }
+                lastStockMap.putIfAbsent(id, current);
+//                if (prev == null) {
+//                    return current;
+//                }
                 // 재고 변화가 감지되면 이벤트 발행 및 값 갱신
                 if (prev != current) {
                     producerService.publishEventStock(new EventStockStream(eventId, (long) current));
