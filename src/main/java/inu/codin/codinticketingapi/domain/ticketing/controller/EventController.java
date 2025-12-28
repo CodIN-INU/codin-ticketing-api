@@ -7,7 +7,7 @@ import inu.codin.codinticketingapi.domain.ticketing.dto.response.EventParticipat
 import inu.codin.codinticketingapi.domain.ticketing.dto.stream.EventStockStream;
 import inu.codin.codinticketingapi.domain.ticketing.entity.Campus;
 import inu.codin.codinticketingapi.domain.ticketing.entity.ParticipationStatus;
-import inu.codin.codinticketingapi.domain.ticketing.service.EventService;
+import inu.codin.codinticketingapi.domain.ticketing.service.EventQueryService;
 import inu.codin.codinticketingapi.domain.ticketing.service.EventStockProducerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Event API", description = "티켓팅 이벤트 API")
 public class EventController {
 
-    private final EventService eventService;
+    private final EventQueryService eventQueryService;
 
     private final EventStockProducerService eventStockProducerService;
 
@@ -38,7 +38,7 @@ public class EventController {
             @Parameter(description = "페이지", example = "0") @RequestParam("page") @NotNull int pageNumber
     ) {
         return ResponseEntity.ok(new SingleResponse<>(200, "티켓팅 이벤트 게시물 리스트 조회 성공",
-                eventService.getEventList(campus, pageNumber)));
+                eventQueryService.getEventList(campus, pageNumber)));
     }
 
     /** 티켓팅 이벤트 상세 정보 조회 */
@@ -49,7 +49,7 @@ public class EventController {
             @Parameter(description = "이벤트 ID", example = "1111") @PathVariable Long eventId
     ) {
         return ResponseEntity.ok(new SingleResponse<>(200, "티켓팅 이벤트 상세 정보 조회 성공",
-                eventService.getEventDetail(eventId)));
+                eventQueryService.getEventDetail(eventId)));
     }
 
     /** 유저 마이페이지 티켓팅 참여 전체 이력 조회 */
@@ -60,7 +60,7 @@ public class EventController {
             @Parameter(description = "페이지", example = "0") @RequestParam("page") @NotNull int pageNumber
     ) {
         return ResponseEntity.ok(new SingleResponse<>(200, "티켓팅 유저 티켓팅 참여 전체 이력 조회",
-                eventService.getUserEventList(pageNumber)));
+                eventQueryService.getUserEventList(pageNumber)));
     }
 
     /** 유저 마이페이지 티켓팅 참여 완료, 미수령, 취소 이력 조회 */
@@ -72,7 +72,7 @@ public class EventController {
             @Parameter(description = "티켓팀 참여 상태", example = "COMPLETED") @RequestParam("status") ParticipationStatus status
     ) {
         return ResponseEntity.ok(new SingleResponse<>(200, "유저 티켓팅 참여 (완료, 취소) 이력 조회",
-                eventService.getUserEventListByStatus(pageNumber, status)));
+                eventQueryService.getUserEventListByStatus(pageNumber, status)));
     }
 
     /** [테스트] 재고상태 구독자들에게 SSE 전송 */

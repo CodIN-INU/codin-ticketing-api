@@ -24,15 +24,11 @@ public class EventStockProducerService {
      * EventStockStream DTO를 Redis Stream에 전송
      */
     public void publishEventStock(EventStockStream eventStockStream) {
-        // stock_event_log 테이블 추가해 로그 관리
         ObjectRecord<String, EventStockStream> record = StreamRecords
                 .newRecord()
                 .in(STREAM_KEY)
                 .ofObject(eventStockStream);
-
-        RecordId recordId = redisTemplate.opsForStream().add(record);
-
+        // RecordId recordId = redisTemplate.opsForStream().add(record);
         log.info("[Producer] Published EventStockStream: {}", eventStockStream);
-//        return recordId;
     }
 }

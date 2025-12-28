@@ -1,6 +1,6 @@
 package inu.codin.codinticketingapi.domain.ticketing.redis;
 
-import inu.codin.codinticketingapi.domain.ticketing.service.EventService;
+import inu.codin.codinticketingapi.domain.ticketing.service.EventCommandService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.RedisConnectionFailureException;
@@ -10,11 +10,12 @@ import org.springframework.stereotype.Service;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-@Slf4j
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class RedisHealthCheckService {
-    private final EventService eventService;
+
+    private final EventCommandService eventCommandService;
     private final RedisTemplate<String, String> pingRedisTemplate;
 
     // 연속 실패 횟수를 저장 (동시성 문제를 위해 AtomicInteger 사용)
@@ -39,10 +40,9 @@ public class RedisHealthCheckService {
 
     private void handleSuccess() {
         int currentFailures = consecutiveFailures.get();
-
         if (currentFailures >= FAILURE_THRESHOLD) {
             log.info("Redis 연결이 복구되었습니다. 이벤트 상태를 ACTIVE로 복원합니다.");
-            eventService.restoreUpcomingEventsToActive();
+            eventCommandService.restoreUpcomingEventsToActive();
         } else if (currentFailures > 0) {
             log.info("Redis 연결이 복구되었습니다.");
         }
@@ -53,11 +53,10 @@ public class RedisHealthCheckService {
     private void handleFailure() {
         int failures = consecutiveFailures.incrementAndGet();
         log.warn("Redis 연결 실패. 연속 실패 횟수: {}회", failures);
-
         // 정확히 임계값에 도달했을 때 딱 한 번만 실행
         if (failures == FAILURE_THRESHOLD) {
             log.error("Redis 장애가 {}초 이상 지속되어 모든 활성 이벤트를 UPCOMING 상태로 변경합니다.", 10 * FAILURE_THRESHOLD);
-            eventService.changeAllActiveEventsToUpcoming();
+            eventCommandService.changeAllActiveEventsToUpcoming();
         }
     }
 }

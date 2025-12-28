@@ -26,10 +26,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Slf4j
 @Service
+@Slf4j
 @RequiredArgsConstructor
-public class EventService {
+public class EventQueryService {
 
     private final EventRepository eventRepository;
     private final ParticipationRepository participationRepository;
@@ -63,6 +63,9 @@ public class EventService {
 
     @Transactional(readOnly = true)
     public EventParticipationHistoryPageResponse getUserEventList(int pageNumber) {
+        if (pageNumber < 1) {
+            throw new TicketingException(TicketingErrorCode.PAGE_ILLEGAL_ARGUMENT);
+        }
         String userId = userClientService.fetchUser().getUserId();
         Pageable pageable = PageRequest.of(pageNumber, 10, Sort.by("createdAt").descending());
         return EventParticipationHistoryPageResponse.of(participationRepository.findHistoryByUserId(userId, pageable));
@@ -70,41 +73,11 @@ public class EventService {
 
     @Transactional(readOnly = true)
     public EventParticipationHistoryPageResponse getUserEventListByStatus(int pageNumber, @NotNull ParticipationStatus status) {
+        if (pageNumber < 1) {
+            throw new TicketingException(TicketingErrorCode.PAGE_ILLEGAL_ARGUMENT);
+        }
         String userId = userClientService.fetchUser().getUserId();
         Pageable pageable = PageRequest.of(pageNumber, 10, Sort.by("createdAt").descending());
         return EventParticipationHistoryPageResponse.of(participationRepository.findHistoryByUserIdAndCanceled(userId, status, pageable));
-    }
-
-    @Transactional
-    public void changeAllActiveEventsToUpcoming() {
-        List<Event> activeEvents = eventRepository.findByEventStatus(EventStatus.ACTIVE);
-
-        if (activeEvents.isEmpty()) {
-            log.info("상태를 변경할 활성 이벤트가 없습니다.");
-
-            return;
-        }
-
-        // 각 이벤트의 상태를 UPCOMING으로 변경
-        activeEvents.forEach(event -> {
-            log.info("이벤트 ID: {}, '{}'의 상태를 ACTIVE에서 UPCOMING으로 변경합니다.", event.getId(), event.getTitle());
-            event.updateStatus(EventStatus.UPCOMING);
-        });
-    }
-
-    @Transactional
-    public void restoreUpcomingEventsToActive() {
-        List<Event> upcomingEvents = eventRepository.findAllLiveEvent(EventStatus.UPCOMING, LocalDateTime.now());
-
-        if (upcomingEvents.isEmpty()) {
-            log.info("ACTIVE로 복구할 UPCOMING 상태의 이벤트가 없습니다.");
-
-            return;
-        }
-
-        upcomingEvents.forEach(event -> {
-            log.info("Redis 복구로 인해 이벤트 ID: {}의 상태를 ACTIVE로 복구합니다.", event.getId());
-            event.updateStatus(EventStatus.ACTIVE);
-        });
     }
 }
