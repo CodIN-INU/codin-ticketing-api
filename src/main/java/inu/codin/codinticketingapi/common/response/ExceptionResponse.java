@@ -1,7 +1,15 @@
 package inu.codin.codinticketingapi.common.response;
 
-public class ExceptionResponse extends CommonResponse{
-    public ExceptionResponse(String message, int code) {
-        super(false, code, message);
+import lombok.Getter;
+
+@Getter
+public class ExceptionResponse extends CommonResponse {
+    private final int status;
+    private final String message;
+
+    public ExceptionResponse(int status, String message) {
+        super(true, status, message);
+        this.status = status;
+        this.message = message;
     }
 }
